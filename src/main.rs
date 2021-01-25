@@ -1,6 +1,6 @@
 /*--------------------------------------
 |       Roblox Inventory Scanner       |
-|             by tornadus              |
+|     Copyright (C) 2021 tornadus      |
 |        Last Update: 1/24/2021        |
 --------------------------------------*/
 
