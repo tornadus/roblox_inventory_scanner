@@ -89,9 +89,10 @@ fn pause() {
 
     let _ = stdin.read(&mut [0u8]).unwrap();
     let _ = stdin.read(&mut [0u8]).unwrap();
+    let _ = stdin.read(&mut [0u8]).unwrap();
 }
 
-async fn normal_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32) -> Vec<OwnershipAPI> {
+async fn normal_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connections: usize) -> Vec<OwnershipAPI> {
     //Scans non-terminated users
     let found_ids: Vec<OwnershipAPI> = Vec::new(); //Used below
     let found = Arc::new(Mutex::new(found_ids)); //Gathering owned items from the asynchronous HTTP calls
@@ -120,7 +121,7 @@ async fn normal_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32) -> Vec<Ow
                 }
             }
         })
-        ).buffer_unordered(50).collect::<Vec<()>>(); //50 concurrent requests, this number can be raised at risk of HTTP request failure
+        ).buffer_unordered(connections).collect::<Vec<()>>(); //50 concurrent requests, this number can be raised at risk of HTTP request failure
     fetches.await;
 
     let item_vector = &*found.lock().unwrap(); //Unwrap to obtain vector
@@ -129,7 +130,7 @@ async fn normal_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32) -> Vec<Ow
 
 }
 
-async fn banned_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32) -> Vec<u64> {
+async fn banned_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connections: usize) -> Vec<u64> {
     //Scans terminated users
     let found_ids: Vec<u64> = Vec::new(); //Used below
     let found = Arc::new(Mutex::new(found_ids)); //Gather owned item ids from the async block
@@ -155,7 +156,7 @@ async fn banned_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32) -> Vec<u6
             }
         }
     })
-    ).buffer_unordered(50).collect::<Vec<()>>();
+    ).buffer_unordered(connections).collect::<Vec<()>>();
     fetches.await;
 
     let item_vector = &*found.lock().unwrap(); //Unwrap to obtain vector
@@ -170,6 +171,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Please enter a user id:");
     let uid: i32 = text_io::read!(); //Get user input for user id
     println!("Scanning user id {}", uid);
+    println!("Please enter amount of concurrent connections (Reccomended 50, choose lower if errors):");
+    let connections: usize = text_io::read!(); //Get connection amount
     let client = Client::builder().build()?; //HTTP client
     
     //Get Rolimon's API
@@ -201,7 +204,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_api: UserAPI = serde_json::from_str(&user_text).unwrap(); //User API instance used for ban check
 
     if user_api.is_banned == false { //If the user is not banned
-        let item_vector = normal_scan(ids, client, uid).await;
+        let item_vector = normal_scan(ids, client, uid, connections).await;
 
         let mut item_str = String::from(""); //Empty string used to print the list of items in one go
         let mut item_count = 0; //Total item count
@@ -236,7 +239,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut total_value = 0; //Total value
         let mut total_rap = 0; //Total RAP
 
-        let item_vector = banned_scan(ids, client, uid).await;
+        let item_vector = banned_scan(ids, client, uid, connections).await;
 
         for item in item_vector {
             let mut value = roli_items[&item].value; //Mutable variable for value
