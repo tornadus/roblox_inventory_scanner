@@ -1,6 +1,6 @@
 [package]
 name = "roblox_inventory_scanner"
-version = "0.2.3"
+version = "0.3.0"
 authors = ["tornadus <33427110+tornadus@users.noreply.github.com>"]
 edition = "2018"
 

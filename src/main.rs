@@ -1,7 +1,7 @@
 /*--------------------------------------
 |       Roblox Inventory Scanner       |
 |     Copyright (C) 2021 tornadus      |
-|        Last Update: 1/25/2021        |
+|        Last Update: 1/26/2021        |
 --------------------------------------*/
 
 
@@ -12,6 +12,9 @@ use serde::{Deserialize};
 use std::collections::HashMap;
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT, CONTENT_TYPE};
 use std::sync::{Arc, Mutex};
+use std::fs::{File};
+use std::path::Path;
+use std::io::prelude::*;
 
 
 //Structs
@@ -56,7 +59,8 @@ struct OwnedItem {
 _a_type: Option<String>,
 id: u64,
 name: String,
-_instance: Option<u64>,
+#[serde(rename(deserialize = "instanceId"))]
+instance_id: u64,
 }
 
 
@@ -78,10 +82,42 @@ fn construct_headers() -> HeaderMap {
     headers
 }
 
+fn write_file(data: String, filename: String) {
+    let name_file = format!("{}.txt", filename); //Add .txt to filename
+    let path = Path::new(&name_file);
+    let display = path.display();
+
+    //Create file if it doesn't exist
+    let mut file = match File::create(&path) {
+        Err(why) => panic!("Couldn't create {}: {}...", display, why),
+        Ok(file) => file,
+    };
+
+    //Write (or overwrite if file exists)
+    match file.write_all(data.as_bytes()) {
+        Err(why) => panic!("Couldn't write to {}: {}...", display, why),
+        Ok(_) => println!("Successfully wrote list to {}!", display),
+    }
+}
+
+
+
 fn spaces(num: u64) -> String {
     //Return the spaces needed for string formatting later
     let ret: String;
-    if num < 10000000 {
+    if num < 10 {
+        ret = "            ".to_string();
+    } else if num < 100 {
+        ret = "           ".to_string();
+    } else if num < 1000 {
+        ret = "          ".to_string();
+    } else if num < 10000 {
+        ret = "         ".to_string();
+    } else if num < 100000 {
+        ret = "        ".to_string();
+    } else if num < 1000000 {
+        ret = "       ".to_string();
+    } else if num < 10000000 {
         ret = "      ".to_string();
     } else if num < 100000000 {
         ret = "     ".to_string();
@@ -210,7 +246,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if user_api.is_banned == false { //If the user is not banned
         let item_vector = normal_scan(ids, client, uid, connections).await;
 
-        let mut item_str = String::from(""); //Empty string used to print the list of items in one go
+        let mut item_str = String::from("\nUAID         ||| Name"); //Empty string used to print the list of items in one go
         let mut item_count = 0; //Total item count
         let mut total_value = 0; //Total value
         let mut total_rap = 0; //Total RAP
@@ -225,20 +261,46 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 total_value = total_value + value; //Add item value to total
                 total_rap = total_rap + rap; //Add item RAP to total
                 item_count = item_count + 1; //Add item count to total
-                let addstr = format!("\n{}{}||| {}", item.id, spaces(item.id), item.name); //Create string to add to item_str
+                let addstr = format!("\n{}{}||| {}", item.instance_id, spaces(item.instance_id), item.name); //Create string to add to item_str
                 item_str.push_str(&addstr) //Adds addstr to item_str
             }
         }
-    
-        println!("{} item(s) found.", item_count); //Prints amount of items
+        //String formatting
+        item_str.push_str("\n");
+        let count_str = format!("{} item(s) found.", item_count);
+        item_str.push_str(&count_str);
+        let total_str = format!("\nTotal value is R${}\nTotal RAP is R${}\n", total_value, total_rap);
+        item_str.push_str(&total_str);
         print!("{}", item_str); //Prints the item list
-        println!("\nTotal value is R${}\nTotal RAP is R${}", total_value, total_rap); //Prints the total value and total RAP
-        //pause(); //Waits for enter keypress to end program (Useful if launched from explorer instead of cmd)
+
+        //Ask about saving output to file
+        println!("Save output to file?");
+        let answer = loop{
+            let ask: String = text_io::read!();
+            if ask == "yes" || ask == "y" {
+                break true;
+            } else if ask == "no" || ask == "n" {
+                break false;
+            } else {
+                println!("Please enter yes or no!")
+            }
+
+        };
+
+        //Save output to file, exit if answer is no
+        if answer == true {
+            println!("Attempting save to file...");
+            let filename = format!("{}_scan", uid);
+            write_file(item_str, filename);
+        } else {
+            println!();
+        }
+    
         dont_disappear::any_key_to_continue::default();
 
 
     } else if user_api.is_banned == true { //If the user is banned
-        let mut item_str = String::from(""); //Empty string used to print the list of items in one go
+        let mut item_str = String::from("\nID           ||| Name"); //Empty string used to print the list of items in one go
         let mut item_count = 0; //Total item count
         let mut total_value = 0; //Total value
         let mut total_rap = 0; //Total RAP
@@ -257,11 +319,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let addstr = format!("\n{}{}||| {}", item, spaces(item), roli_items[&item].name); //Create string to add to item_str
             item_str.push_str(&addstr) //Adds addstr to item_str
         }
-        println!("{} item(s) found.", item_count); //Prints amount of items
+
+        //String formatting
+        item_str.push_str("\n");
+        let count_str = format!("{} item(s) found.", item_count);
+        item_str.push_str(&count_str);
+        let total_str = format!("\nTotal value is R${}\nTotal RAP is R${}\n", total_value, total_rap);
+        item_str.push_str(&total_str);
+        item_str.push_str("Due to Roblox API limitations, this data does not include multiple copies of owned items.\n");
         print!("{}", item_str); //Prints the item list
-        println!("\nTotal value is R${}\nTotal RAP is R${}", total_value, total_rap); //Prints the total value and total RAP
-        println!("Due to Roblox API limitations, this data does not include multiple copies of owned items.");
-        //pause(); //Waits for enter keypress to end program (Useful if launched from explorer instead of cmd)
+        
+        //Ask about saving output to file
+        println!("Save output to file?");
+        let answer = loop{
+            let ask: String = text_io::read!();
+            if ask == "yes" || ask == "y" {
+                break true;
+            } else if ask == "no" || ask == "n" {
+                break false;
+            } else {
+                println!("Please enter yes or no!")
+            }
+
+        };
+
+        //Save output to file, exit if answer is no
+        if answer == true {
+            println!("Attempting save to file...");
+            let filename = format!("{}_scan", uid);
+            write_file(item_str, filename);
+        } else {
+            println!();
+        }
         dont_disappear::any_key_to_continue::default();
 
     } else {
