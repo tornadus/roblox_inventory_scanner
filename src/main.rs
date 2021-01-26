@@ -207,7 +207,7 @@ async fn banned_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connectio
 //Main function
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("Starting tornadus' inventory scanner v0.2");
+    println!("Starting tornadus' inventory scanner v0.3");
     println!("Please enter a user id:");
     let uid: i32 = text_io::read!(); //Get user input for user id
     println!("Scanning user id {}", uid);
