@@ -12,8 +12,7 @@ use serde::{Deserialize};
 use std::collections::HashMap;
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT, CONTENT_TYPE};
 use std::sync::{Arc, Mutex};
-use std::io;
-use std::io::prelude::{Read, Write};
+
 
 //Structs
 //Rolimon's API
