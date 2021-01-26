@@ -92,6 +92,27 @@ fn pause() {
     let _ = stdin.read(&mut [0u8]).unwrap();
 }
 
+fn spaces(num: u64) -> String {
+    //Return the spaces needed for string formatting later
+    let ret: String;
+    if num < 10000000 {
+        ret = "      ".to_string();
+    } else if num < 100000000 {
+        ret = "     ".to_string();
+    } else if num < 1000000000 {
+        ret = "    ".to_string();
+    } else if num < 10000000000 {
+        ret = "   ".to_string();
+    } else if num < 100000000000 {
+        ret = "  ".to_string();
+    } else if num < 1000000000000 {
+        ret = " ".to_string();
+    } else {
+        ret = "".to_string()
+    }
+    ret
+}
+
 async fn normal_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connections: usize) -> Vec<OwnershipAPI> {
     //Scans non-terminated users
     let found_ids: Vec<OwnershipAPI> = Vec::new(); //Used below
@@ -221,7 +242,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 total_value = total_value + value; //Add item value to total
                 total_rap = total_rap + rap; //Add item RAP to total
                 item_count = item_count + 1; //Add item count to total
-                let addstr = format!("\n{} ||| {}", item.id, item.name); //Create string to add to item_str
+                let addstr = format!("\n{}{}||| {}", item.id, spaces(item.id), item.name); //Create string to add to item_str
                 item_str.push_str(&addstr) //Adds addstr to item_str
             }
         }
@@ -250,7 +271,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             total_value = total_value + value; //Add item value to total
             total_rap = total_rap + rap; //Add item RAP to total
             item_count = item_count + 1; //Add item count to total
-            let addstr = format!("\n{} ||| {}", item, roli_items[&item].name); //Create string to add to item_str
+            let addstr = format!("\n{}{}||| {}", item, spaces(item), roli_items[&item].name); //Create string to add to item_str
             item_str.push_str(&addstr) //Adds addstr to item_str
         }
         println!("{} item(s) found.", item_count); //Prints amount of items
