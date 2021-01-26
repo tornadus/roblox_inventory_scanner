@@ -4,7 +4,8 @@ roblox_inventory_scanner is a tool in rust that allows you to scan any Roblox us
 
 ## Installation
 
-At this time, roblox_inventory_scanner can be built from source using ``cargo``. The only tested platforms are Ubuntu (under WSL) and Windows 10
+At this time, roblox_inventory_scanner can be built from source using ``cargo``. The only tested platforms are Ubuntu (under WSL) and Windows 10.
+Prebuilt binaries for Windows 10 can be obtained from the releases.
 
 ## Usage
 
