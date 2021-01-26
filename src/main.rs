@@ -79,19 +79,6 @@ fn construct_headers() -> HeaderMap {
     headers
 }
 
-fn pause() {
-    //Stops execution of the program and waits for new line
-    let mut stdin = io::stdin();
-    let mut stdout = io::stdout();
-
-    write!(stdout, "Press the enter key to continue...").unwrap();
-    stdout.flush().unwrap();
-
-    let _ = stdin.read(&mut [0u8]).unwrap();
-    let _ = stdin.read(&mut [0u8]).unwrap();
-    let _ = stdin.read(&mut [0u8]).unwrap();
-}
-
 fn spaces(num: u64) -> String {
     //Return the spaces needed for string formatting later
     let ret: String;
@@ -147,8 +134,6 @@ async fn normal_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connectio
 
     let item_vector = &*found.lock().unwrap(); //Unwrap to obtain vector
     item_vector.to_vec() //Return vector
-
-
 }
 
 async fn banned_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connections: usize) -> Vec<u64> {
@@ -182,7 +167,6 @@ async fn banned_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connectio
 
     let item_vector = &*found.lock().unwrap(); //Unwrap to obtain vector
     item_vector.to_vec() //Return vector
-
 }
 
 //Main function
@@ -250,8 +234,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("{} item(s) found.", item_count); //Prints amount of items
         print!("{}", item_str); //Prints the item list
         println!("\nTotal value is R${}\nTotal RAP is R${}", total_value, total_rap); //Prints the total value and total RAP
-        pause(); //Waits for enter keypress to end program (Useful if launched from explorer instead of cmd)
-
+        //pause(); //Waits for enter keypress to end program (Useful if launched from explorer instead of cmd)
+        dont_disappear::any_key_to_continue::default();
 
 
     } else if user_api.is_banned == true { //If the user is banned
@@ -278,10 +262,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         print!("{}", item_str); //Prints the item list
         println!("\nTotal value is R${}\nTotal RAP is R${}", total_value, total_rap); //Prints the total value and total RAP
         println!("Due to Roblox API limitations, this data does not include multiple copies of owned items.");
-        pause(); //Waits for enter keypress to end program (Useful if launched from explorer instead of cmd)
+        //pause(); //Waits for enter keypress to end program (Useful if launched from explorer instead of cmd)
+        dont_disappear::any_key_to_continue::default();
 
     } else {
-        println!("Unknown error, try again!")
+        println!("Unknown error, try again!");
+        dont_disappear::any_key_to_continue::default();
     }
 
     Ok(())

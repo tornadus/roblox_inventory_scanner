@@ -1,6 +1,6 @@
 [package]
 name = "roblox_inventory_scanner"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["tornadus <33427110+tornadus@users.noreply.github.com>"]
 edition = "2018"
 
@@ -13,3 +13,4 @@ serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.1.0", features = ["full"] }
 futures = "0.3.12"
 text_io = "0.1.8"
+dont_disappear = "3.0.1"
