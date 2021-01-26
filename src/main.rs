@@ -246,7 +246,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if user_api.is_banned == false { //If the user is not banned
         let item_vector = normal_scan(ids, client, uid, connections).await;
 
-        let mut item_str = String::from("\nUAID         ||| Name"); //Empty string used to print the list of items in one go
+        println!("");
+        let mut item_str = String::from("UAID         ||| Name"); //Empty string used to print the list of items in one go
         let mut item_count = 0; //Total item count
         let mut total_value = 0; //Total value
         let mut total_rap = 0; //Total RAP
@@ -300,7 +301,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
     } else if user_api.is_banned == true { //If the user is banned
-        let mut item_str = String::from("\nID           ||| Name"); //Empty string used to print the list of items in one go
+        println!("");
+        let mut item_str = String::from("ID           ||| Name"); //Empty string used to print the list of items in one go
         let mut item_count = 0; //Total item count
         let mut total_value = 0; //Total value
         let mut total_rap = 0; //Total RAP
