@@ -15,6 +15,7 @@ use std::sync::{Arc, Mutex};
 use std::fs::{File};
 use std::path::Path;
 use std::io::prelude::*;
+use std::time::{Instant};
 
 
 //Structs
@@ -157,10 +158,10 @@ async fn normal_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connectio
                                 
                                 }
                             
-                            Err(_) => println!("ERROR from {}", path),
+                            Err(_) => println!("Failed to decode JSON. Try lowering concurrent connections! Item ID: {} ", ids),
                         }
                     }
-                    Err(_) => println!("ERROR from {}", path),
+                    Err(_) => println!("Failed to retrieve request. Try lowering concurrent connections! Item ID: {}", ids),
                 }
             }
         })
@@ -190,10 +191,10 @@ async fn banned_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connectio
                                 cloned_found.lock().unwrap().push(ids); //... then append the ID to the vector
                             }
                         }
-                        Err(_) => println!("ERROR CODE 1 from {}", path),
+                        Err(_) => println!("Failed to decode JSON. Try lowering concurrent connections! Item ID: {} ", ids),
                     }
                 }
-                Err(_) => println!("ERROR CODE 2 from {}", path),
+                Err(_) => println!("Failed to retrieve request. Try lowering concurrent connections! Item ID: {}", ids),
             }
         }
     })
@@ -244,8 +245,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_api: UserAPI = serde_json::from_str(&user_text).unwrap(); //User API instance used for ban check
 
     if user_api.is_banned == false { //If the user is not banned
+        let start = Instant::now();
         let item_vector = normal_scan(ids, client, uid, connections).await;
-
+        let duration = start.elapsed();
+        println!("Scan took {:?}", duration);
         println!("");
         let mut item_str = String::from("UAID         ||| Name"); //Empty string used to print the list of items in one go
         let mut item_count = 0; //Total item count
@@ -306,8 +309,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut item_count = 0; //Total item count
         let mut total_value = 0; //Total value
         let mut total_rap = 0; //Total RAP
-
+        let start = Instant::now();
         let item_vector = banned_scan(ids, client, uid, connections).await;
+        let duration = start.elapsed();
+        println!("Scan took {:?}", duration);
 
         for item in item_vector {
             let mut value = roli_items[&item].value; //Mutable variable for value
