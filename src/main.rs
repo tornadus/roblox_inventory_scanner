@@ -191,7 +191,7 @@ async fn banned_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connectio
                                 cloned_found.lock().unwrap().push(ids); //... then append the ID to the vector
                             }
                         }
-                        Err(_) => println!("Failed to decode JSON. Try lowering concurrent connections! Item ID: {} ", ids),
+                        Err(_) => println!("Failed to load response. Try lowering concurrent connections! Item ID: {} ", ids),
                     }
                 }
                 Err(_) => println!("Failed to retrieve request. Try lowering concurrent connections! Item ID: {}", ids),
