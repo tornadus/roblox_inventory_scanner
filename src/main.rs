@@ -1,7 +1,7 @@
 /*--------------------------------------
 |       Roblox Inventory Scanner       |
 |     Copyright (C) 2021 tornadus      |
-|        Last Update: 1/26/2021        |
+|        Last Update: 2/17/2021        |
 --------------------------------------*/
 
 
@@ -136,7 +136,7 @@ fn spaces(num: u64) -> String {
     ret
 }
 
-async fn normal_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connections: usize) -> Vec<OwnershipAPI> {
+async fn normal_scan(ids: Vec<u64>, client: reqwest::Client, uid: i64, connections: usize) -> Vec<OwnershipAPI> {
     //Scans non-terminated users
     let found_ids: Vec<OwnershipAPI> = Vec::new(); //Used below
     let found = Arc::new(Mutex::new(found_ids)); //Gathering owned items from the asynchronous HTTP calls
@@ -172,7 +172,7 @@ async fn normal_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connectio
     item_vector.to_vec() //Return vector
 }
 
-async fn banned_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connections: usize) -> Vec<u64> {
+async fn banned_scan(ids: Vec<u64>, client: reqwest::Client, uid: i64, connections: usize) -> Vec<u64> {
     //Scans terminated users
     let found_ids: Vec<u64> = Vec::new(); //Used below
     let found = Arc::new(Mutex::new(found_ids)); //Gather owned item ids from the async block
@@ -210,7 +210,7 @@ async fn banned_scan(ids: Vec<u64>, client: reqwest::Client, uid: i32, connectio
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Starting tornadus' inventory scanner v0.3");
     println!("Please enter a user id:");
-    let uid: i32 = text_io::read!(); //Get user input for user id
+    let uid: i64 = text_io::read!(); //Get user input for user id
     println!("Scanning user id {}", uid);
     println!("Please enter amount of concurrent connections (Reccomended 50, choose lower if errors):");
     let connections: usize = text_io::read!(); //Get connection amount
