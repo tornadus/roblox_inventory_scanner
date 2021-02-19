@@ -862,7 +862,7 @@ dependencies = [
 
 [[package]]
 name = "roblox_inventory_scanner"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "dont_disappear",
  "futures",

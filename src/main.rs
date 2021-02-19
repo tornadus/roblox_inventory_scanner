@@ -1,7 +1,7 @@
 /*--------------------------------------
 |       Roblox Inventory Scanner       |
 |     Copyright (C) 2021 tornadus      |
-|        Last Update: 2/17/2021        |
+|        Last Update: 2/18/2021        |
 --------------------------------------*/
 
 
@@ -73,6 +73,12 @@ is_banned: bool,
 }
 
 
+#[derive(Deserialize)]
+struct UsernameAPI {
+#[serde(rename(deserialize = "Id"))]
+id: i64,
+}
+
 //Functions
 
 fn construct_headers() -> HeaderMap {
@@ -84,6 +90,7 @@ fn construct_headers() -> HeaderMap {
 }
 
 fn write_file(data: String, filename: String) {
+    //This function writes the output to a file
     let name_file = format!("{}.txt", filename); //Add .txt to filename
     let path = Path::new(&name_file);
     let display = path.display();
@@ -136,6 +143,36 @@ fn spaces(num: u64) -> String {
     ret
 }
 
+async fn get_user_id(ustring: String, client: reqwest::Client) -> i64 {
+    //This function returns a Roblox user id from a username (or just spits back out an id if given one)
+    //If already a user id, return the id
+    match ustring.parse::<i64>() {
+        Ok(val) => return val,
+        Err(_) => println!("Username detected!"),
+      }
+    
+    //Strip quotes from usernames, this allows the user to enter usernames consisting entirely of numbers
+    let uname = ustring.replace(&['"', '\''][..], "");
+    let url = format!("https://api.roblox.com/users/get-by-username?username={}", uname);
+
+    //API request
+    let req = client.get(&url)
+    .headers( construct_headers() )
+    .send()
+    .await;
+    
+    match req {
+        Ok(res) => {
+            match res.json::<UsernameAPI>().await {
+                Ok(res) => return res.id,
+                Err(_) => panic!("User not found!") //Panic if the "Id" field is not present (User not found)
+            }
+        }
+        Err(_) => panic!("HTTPS Request Failure! Check your connection"), //Panic if the HTTP request as a whole fails
+    }
+
+}
+
 async fn normal_scan(ids: Vec<u64>, client: reqwest::Client, uid: i64, connections: usize) -> Vec<OwnershipAPI> {
     //Scans non-terminated users
     let found_ids: Vec<OwnershipAPI> = Vec::new(); //Used below
@@ -158,10 +195,10 @@ async fn normal_scan(ids: Vec<u64>, client: reqwest::Client, uid: i64, connectio
                                 
                                 }
                             
-                            Err(_) => println!("Failed to decode JSON. Try lowering concurrent connections! Item ID: {} ", ids),
+                            Err(_) => panic!("Failed to decode JSON. Try lowering concurrent connections! Item ID: {} ", ids),
                         }
                     }
-                    Err(_) => println!("Failed to retrieve request. Try lowering concurrent connections! Item ID: {}", ids),
+                    Err(_) => panic!("Failed to retrieve request. Try lowering concurrent connections! Item ID: {}", ids),
                 }
             }
         })
@@ -191,10 +228,10 @@ async fn banned_scan(ids: Vec<u64>, client: reqwest::Client, uid: i64, connectio
                                 cloned_found.lock().unwrap().push(ids); //... then append the ID to the vector
                             }
                         }
-                        Err(_) => println!("Failed to load response. Try lowering concurrent connections! Item ID: {} ", ids),
+                        Err(_) => println!("[WARNING] Failed to load response. Try lowering concurrent connections! Item ID: {} ", ids),
                     }
                 }
-                Err(_) => println!("Failed to retrieve request. Try lowering concurrent connections! Item ID: {}", ids),
+                Err(_) => println!("[WARNING] Failed to retrieve request. Try lowering concurrent connections! Item ID: {}", ids),
             }
         }
     })
@@ -208,15 +245,18 @@ async fn banned_scan(ids: Vec<u64>, client: reqwest::Client, uid: i64, connectio
 //Main function
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("Starting tornadus' inventory scanner v0.3");
-    println!("Please enter a user id:");
-    let uid: i64 = text_io::read!(); //Get user input for user id
+    let roclient = Client::builder().build()?; //HTTP client
+    println!("Starting tornadus' inventory scanner v0.4");
+    println!("Please enter a username or a user id:");
+    let ustr: String = text_io::read!(); //Get user input for username/id
+    let uid = get_user_id(ustr, roclient).await; //Get user id from the user's input
+
     println!("Scanning user id {}", uid);
-    println!("Please enter amount of concurrent connections (Reccomended 50, choose lower if errors):");
+    println!("Please enter amount of concurrent connections (Recommended 50, choose lower if you experience errors):");
     let connections: usize = text_io::read!(); //Get connection amount
-    let client = Client::builder().build()?; //HTTP client
+        let client = Client::builder().build()?; //HTTP client
     
-    //Get Rolimon's API
+    //Rolimon's API request
     let req = client.get("https://www.rolimons.com/itemapi/itemdetails")
         .headers( construct_headers() )
         .send()
