@@ -1,3 +1,6 @@
+# IMPORTANT NOTICE
+Development on this tool has ceased due to Roblox updates (namely, ratelimiting on key APIs.) Sorry for any inconvenience!
+
 # roblox_inventory_scanner
 
 roblox_inventory_scanner is a tool in rust that allows you to scan any Roblox user's inventory for limited items.
